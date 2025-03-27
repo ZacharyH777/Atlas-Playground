@@ -5,10 +5,10 @@ that you can use.
 
 ## Conan Setup
 
-To get all of Engine3D packages, just run this conan command. To start using them.
+To get all of atlas packages, just run this conan command. To start using them.
 
 ```
-conan remote add engine3d-conan https://libhal.jfrog.io/artifactory/api/conan/engine3d-conan
+conan remote add atlas-conan https://libhal.jfrog.io/artifactory/api/conan/atlas-conan
 ```
 
 ## Build Starter
