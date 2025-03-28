@@ -32,7 +32,7 @@ class GameDemo(ConanFile):
         self.requires("stb/cci.20230920")
 
         self.requires("boost-ext-ut/2.1.0")
-        self.requires("atlas/0.1")
+        self.requires("atlas/0.1@physics/testing")
 
     def build(self):
         cmake = CMake(self)
