@@ -29,3 +29,5 @@ build_application(
 
     atlas::atlas
 )
+
+generate_compile_commands()

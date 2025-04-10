@@ -17,8 +17,7 @@ class GameDemo(ConanFile):
     # Putting all of your packages here
     def requirements(self):
         self.requires("glfw/3.4", transitive_headers=True)
-        self.requires("fmt/10.2.1", transitive_headers=True)
-        self.requires("spdlog/1.14.1", transitive_headers=True)
+        self.requires("spdlog/1.15.1", transitive_headers=True)
         self.requires("glm/1.0.1", transitive_headers=True)
         self.requires("yaml-cpp/0.8.0", transitive_headers=True)
         self.requires("box2d/2.4.1", transitive_headers=True)
