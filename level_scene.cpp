@@ -1,4 +1,6 @@
+
 #include "level_scene.hpp"
+#include <physics/jolt-cpp/jolt-imports.hpp>
 #include <drivers/vulkan/helper_functions.hpp>
 #include <drivers/vulkan/vulkan_context.hpp>
 #include <drivers/vulkan/vulkan_swapchain.hpp>
@@ -12,78 +14,97 @@
 #include <glm/ext/quaternion_common.hpp>
 #include <renderer/renderer.hpp>
 
+#include <physics/physics_3d/data/collider_body.hpp>
+#include <physics/physics_3d/data/transform.hpp>
+
 #include <core/timer.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 
-//bool on_click_check = false;
+// bool on_click_check = false;
 //
-//constexpr int ROTATION_DIRECTION_X = -1;
-//constexpr int ROTATION_DIRECTION_Y = -1;
+// constexpr int ROTATION_DIRECTION_X = -1;
+// constexpr int ROTATION_DIRECTION_Y = -1;
 //
-//struct MeshData {
-//    glm::vec3 Position{ 0.f };
-//    glm::vec3 Scale{ 0.f };
-//    glm::vec3 Rotation{ 0.f };
-//    std::string mesh_file = "";
-//    glm::vec3 Color{ 1.f };
-//};
+// struct MeshData {
+//     glm::vec3 Position{ 0.f };
+//     glm::vec3 Scale{ 0.f };
+//     glm::vec3 Rotation{ 0.f };
+//     std::string mesh_file = "";
+//     glm::vec3 Color{ 1.f };
+// };
 //
-//struct CameraData {
-//    glm::vec3 Position{ 0.f };
-//    glm::vec3 Front{ 0.f };
-//    float Angle = 90.f;
-//};
+// struct CameraData {
+//     glm::vec3 Position{ 0.f };
+//     glm::vec3 Front{ 0.f };
+//     float Angle = 90.f;
+// };
 //
-//static float sensitivity = 0.f;
+// static float sensitivity = 0.f;
 //
-//static MeshData sphere_data;
-//static MeshData some_mesh_data;
-//static CameraData camera_data;
-//static std::string s_SceneFilepath = "";
-//static glm::vec3 g_light_position = glm::vec3(0.0f, 0.0f, 1.0f);
+// static MeshData sphere_data;
+// static MeshData some_mesh_data;
+// static CameraData camera_data;
+// static std::string s_SceneFilepath = "";
+// static glm::vec3 g_light_position = glm::vec3(0.0f, 0.0f, 1.0f);
 //
-//static void
-//TraceImpl(const char* Message, ...) {
-//    va_list list;
-//    va_start(list, Message);
-//    char buffer[1024];
-//    vsnprintf(buffer, sizeof(buffer), Message, list);
-//    va_end(list);
-//    console_log_warn("TraceImpl Warning Occured!");
-//    console_log_warn("{}", buffer);
-//}
+// static void
+// TraceImpl(const char* Message, ...) {
+//     va_list list;
+//     va_start(list, Message);
+//     char buffer[1024];
+//     vsnprintf(buffer, sizeof(buffer), Message, list);
+//     va_end(list);
+//     console_log_warn("TraceImpl Warning Occured!");
+//     console_log_warn("{}", buffer);
+// }
 //
-//namespace ui {
-//    [[maybe_unused]] static bool BeginPopupContextWindow(const char* str_id,
-//                                                         ImGuiMouseButton mb,
-//                                                         bool over_items) {
-//        return ImGui::BeginPopupContextWindow(
-//          str_id, mb | (over_items ? 0 : ImGuiPopupFlags_NoOpenOverItems));
-//    }
+// namespace ui {
+//     [[maybe_unused]] static bool BeginPopupContextWindow(const char* str_id,
+//                                                          ImGuiMouseButton mb,
+//                                                          bool over_items) {
+//         return ImGui::BeginPopupContextWindow(
+//           str_id, mb | (over_items ? 0 : ImGuiPopupFlags_NoOpenOverItems));
+//     }
 //
-//};
+// };
 //
-//level_scene::level_scene() {}
+// level_scene::level_scene() {}
 //
 
+level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
 
+  console_log_info("scene_scope::scene_scope with Tag = {} called!", p_tag);
+  printf("Getting here\n");
 
-level_scene::level_scene(const std::string& p_tag)
- : atlas::scene_scope(p_tag) {
-    
-    
+  m_camera = this->create_new_object("camera");
 
-    //m_camera = this->create_new_object("camera");
+  m_camera->add<atlas::physics::jolt_settings>();
 
-   //  query_objects.Position = { 0.0f, 1.50f, 0.0f };
-   //  camera_data.Front = glm::vec3(-0.0f, 0.0f, -1.0f);
+  m_sphere = this->create_new_object("sphere");
 
-    m_camera->add<atlas::camera>();
+  m_sphere->add<atlas::physics::physics_body>();
+  m_sphere->add<atlas::physics::collider_body>();
+  m_sphere->add<atlas::physics::transform_physics>();
 
-   //  sensitivity = m_camera->get<atlas::camera>()->MovementSpeed;
- }
+  printf("Getting here2\n");
+
+  engine = atlas::physics::initialize_engine(m_camera);
+
+  console_log_info("Doesn't work\n");
+
+  atlas::sync(this, &level_scene::on_update);
+
+  
+
+  //  query_objects.Position = { 0.0f, 1.50f, 0.0f };
+  //  camera_data.Front = glm::vec3(-0.0f, 0.0f, -1.0f);
+
+  // m_camera->add<atlas::camera>();
+
+  //  sensitivity = m_camera->get<atlas::camera>()->MovementSpeed;
+}
 //    console_log_info("scene_scope::scene_scope with Tag = {} called!", p_tag);
 //    atlas::world_scope world = atlas::system_registry::get_world();
 //    std::string world_tag = world.get_tag();
@@ -101,7 +122,7 @@ level_scene::level_scene(const std::string& p_tag)
 //
 //    m_sphere->add<atlas::RigidBody3D>();
 //    m_sphere->add<atlas::Light>();
-//  
+//
 //    const atlas::Transform* transform = m_sphere->get<atlas::Transform>();
 //
 //    sphere_data.Position = transform->Position;
@@ -129,8 +150,8 @@ level_scene::level_scene(const std::string& p_tag)
 //                     atlas::system_registry::get_world().get_tag());
 //}
 //
-//void
-//level_scene::on_ui_update() {
+// void
+// level_scene::on_ui_update() {
 //
 //    if (ImGui::Begin("Viewport")) {
 //        glm::vec2 viewportPanelSize =
@@ -164,7 +185,8 @@ level_scene::level_scene(const std::string& p_tag)
 //
 //    if (ImGui::Begin("Properties Panel")) {
 //
-//        atlas::ui::draw_panel_component<atlas::RenderTarget3D>("Sphere", [&]() {
+//        atlas::ui::draw_panel_component<atlas::RenderTarget3D>("Sphere", [&]()
+//        {
 //            atlas::ui::draw_vec3("pos 1", sphere_data.Position);
 //            atlas::ui::draw_vec3("scale 1", sphere_data.Scale);
 //            atlas::ui::draw_vec3("rotate 1", sphere_data.Rotation);
@@ -207,6 +229,13 @@ level_scene::level_scene(const std::string& p_tag)
 //}
 //
 void level_scene::on_update() {
+  if(test_bool == false)
+  {
+    test_bool = true;
+    engine->start_runtime();
+    engine->physics_step();
+    engine->stop_runtime();
+  }
 }
 //     auto camera_transform = *m_camera->get<atlas::Transform>();
 
@@ -239,7 +268,7 @@ void level_scene::on_update() {
 
 //     if (atlas::event::is_mouse_pressed(MOUSE_BUTTON_RIGHT)) {
 //         glm::vec2 cursor_pos = atlas::event::cursor_position();
-            
+
 //             //! @note On right click make sure change starts as 0
 //             if(!on_click_check)
 //             {
@@ -247,17 +276,17 @@ void level_scene::on_update() {
 //                 on_click_check = true;
 //             }
 
-
-
 //             //! @note offset is now delta_x and delta_y
 //             //! @note the difference between mouse old and new positions
 //             glm::vec2 offset = cursor_pos - last_cursor_pos;
 
 //             glm:glm::vec2 velocity = offset * (deltaTime * 100);
 
-//             camera_comp.ProcessMouseMovement(velocity.x * ROTATION_DIRECTION_X, 0.0f);
+//             camera_comp.ProcessMouseMovement(velocity.x *
+//             ROTATION_DIRECTION_X, 0.0f);
 
-//             camera_comp.ProcessMouseMovement(0.0f,velocity.y * ROTATION_DIRECTION_Y);
+//             camera_comp.ProcessMouseMovement(0.0f,velocity.y *
+//             ROTATION_DIRECTION_Y);
 
 //             last_cursor_pos = cursor_pos;
 //         } else {
@@ -273,8 +302,8 @@ void level_scene::on_update() {
 
 // }
 //
-//void
-//level_scene::on_physics_update() {
+// void
+// level_scene::on_physics_update() {
 //
 //    if (atlas::event::is_key_pressed(KEY_L)) {
 //        m_is_simulation_enabled = true;

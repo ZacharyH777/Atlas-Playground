@@ -14,7 +14,7 @@ keepy::keepy() {
     atlas::sync(this, &keepy::on_update);
     atlas::sync_physics(this, &keepy::on_physics_update);
 
-    flecs::query<> query_objects = this->query_builder<atlas::camera>().build();
+    // flecs::query<> query_objects = this->query_builder<atlas::camera>().build();
 }
 
 keepy::~keepy() {

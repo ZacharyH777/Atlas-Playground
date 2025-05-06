@@ -1,6 +1,7 @@
 #pragma once
 #include <core/scene/scene.hpp>
 #include <core/scene/scene_object.hpp>
+#include <physics/physics_3d/physics.hpp>
 #include <glm/glm.hpp>
 
 class level_scene : public atlas::scene_scope {
@@ -15,19 +16,22 @@ public:
 
     void on_update();
 
-    void on_ui_update();
+    // void on_ui_update();
 
-    void on_physics_update();
+    // void on_physics_update();
 
-    void on_runtime_start();
-    void on_runtime_stop();
+    // void on_runtime_start();
+    // void on_runtime_stop();
 
 private:
+    atlas::ref<atlas::physics::physics_engine> engine;
     atlas::ref<atlas::scene_object> m_sphere;
     atlas::ref<atlas::scene_object> m_platform;
     atlas::ref<atlas::scene_object> m_light_object;
     bool m_is_simulation_enabled = false;
     atlas::ref<atlas::scene_object> m_camera;
+
+    bool test_bool = false;
 
     glm::vec2 last_cursor_pos = glm::zero<glm::vec2>();
 };

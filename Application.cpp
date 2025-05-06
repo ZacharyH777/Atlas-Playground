@@ -1,18 +1,16 @@
-#include <atlas/core/application.hpp>
-#include <atlas/renderer/renderer.hpp>
+#include <core/application.hpp>
 #include "editor_world.hpp"
 
-class test_application : public atlas::application{
+class editor_application : public atlas::application {
 public:
-    test_application(const atlas::application_settings& p_settings) 
-    : application(p_settings) {
+    editor_application(const atlas::application_settings& p_settings)
+      : application(p_settings) {
         m_world = atlas::create_ref<editor_world>("Editor World");
     }
 
 private:
     atlas::ref<editor_world> m_world;
 };
-
 
 namespace atlas {
     ref<application> initialize_application() {
@@ -22,7 +20,7 @@ namespace atlas {
             .Height = 800,
         };
 
-        return create_ref<test_application>(settings);
+        return create_ref<editor_application>(settings);
     }
 
-} 
+}

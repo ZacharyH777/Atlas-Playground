@@ -23,6 +23,7 @@ class GameDemo(ConanFile):
         self.requires("box2d/2.4.1", transitive_headers=True)
         self.requires("opengl/system", transitive_headers=True)
         self.requires("imguidocking/2.0")
+        self.requires("joltphysics/5.2.0")
 
         # Vulkan-related headers and includes packages
         self.requires("vulkan-headers/1.3.290.0", transitive_headers=True)
