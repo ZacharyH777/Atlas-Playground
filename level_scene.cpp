@@ -1,9 +1,9 @@
 
 #include "level_scene.hpp"
-#include <physics/jolt-cpp/jolt-imports.hpp>
 #include <drivers/vulkan/helper_functions.hpp>
 #include <drivers/vulkan/vulkan_context.hpp>
 #include <drivers/vulkan/vulkan_swapchain.hpp>
+#include <physics/jolt-cpp/jolt-imports.hpp>
 
 #include <core/event/event.hpp>
 #include <core/update_handlers/sync_update.hpp>
@@ -14,8 +14,9 @@
 #include <glm/ext/quaternion_common.hpp>
 #include <renderer/renderer.hpp>
 
-#include <physics/physics_3d/data/collider_body.hpp>
-#include <physics/physics_3d/data/transform.hpp>
+#include <components/transform.hpp>
+#include <physics/jolt-cpp/jolt_collision.hpp>
+#include <physics/jolt-cpp/jolt_components.hpp>
 
 #include <core/timer.hpp>
 
@@ -80,23 +81,54 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
 
   m_camera = this->create_new_object("camera");
 
-  m_camera->add<atlas::physics::jolt_settings>();
+  m_camera->add<atlas::physics::jolt::jolt_settings>();
+
+  m_camera->add<atlas::camera>();
 
   m_sphere = this->create_new_object("sphere");
 
+  m_sphere->set<atlas::rendertarget3d>(
+      atlas::rendertarget3d("assets/models/colored_cube.obj"));
+
   m_sphere->add<atlas::physics::physics_body>();
+
+  auto sphere_body = *m_sphere->get<atlas::physics::physics_body>();
+  sphere_body.body_movement_type = atlas::physics::body_type::Dynamic;
+  m_sphere->set(sphere_body);
+
   m_sphere->add<atlas::physics::collider_body>();
-  m_sphere->add<atlas::physics::transform_physics>();
+  m_sphere->add<atlas::transform_physics>();
+  m_sphere->set<atlas::transform_physics>(
+      {.position = {0.f, 2.10f, -7.30f},
+       .quaterion_rotation{-0.5440211, 0, 0, -0.8390715},
+       .scale = {.50f, .50f, .50f}});
 
-  printf("Getting here2\n");
+  m_platform = this->create_new_object("platform");
 
-  engine = atlas::physics::initialize_engine(m_camera);
+  m_platform->add<atlas::physics::collider_body>();
+  m_platform->add<atlas::transform_physics>();
 
-  console_log_info("Doesn't work\n");
+  m_sphere->set<atlas::transform>({.Position = {0.f, 2.10f, -7.30f},
+                                   .Rotation{1.1504441, 0, 0},
+                                   .Scale = {.50f, .50f, .50f},
+                                   .Color = {1.0f, 1.f, 1.f, 1.f}});
+
+  auto platform_body = *m_platform->get<atlas::physics::collider_body>();
+  platform_body.shape_type = atlas::physics::collider_shape::Box;
+  platform_body.half_extents = {10, 1, 10};
+  m_platform->set(platform_body);
+
+  m_platform->set<atlas::rendertarget3d>(
+      atlas::rendertarget3d("assets/models/cube.obj"));
+
+  auto platform_location = *m_platform->get<atlas::transform_physics>();
+  platform_location.position = {0, -10, 0};
+  m_platform->set(platform_location);
+
+  m_platform->set<atlas::transform>(
+      {.Position = {0.f, -10.0f, 0.0f}, .Scale = {10.0f, 1.00f, 10.0f}});
 
   atlas::sync(this, &level_scene::on_update);
-
-  
 
   //  query_objects.Position = { 0.0f, 1.50f, 0.0f };
   //  camera_data.Front = glm::vec3(-0.0f, 0.0f, -1.0f);
@@ -229,13 +261,88 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
 //}
 //
 void level_scene::on_update() {
-  if(test_bool == false)
-  {
+
+  if (!test_bool_2) {
+
+    flecs::entity flecs_sphere = *m_sphere;
+    atlas::physics::jolt_collision(flecs_sphere.id());
+    engine = atlas::physics::initialize_engine(m_camera);
+    test_bool_2 = true;
+  }
+  if (atlas::event::is_key_pressed(key_r) && !test_bool) {
     test_bool = true;
     engine->start_runtime();
+  }
+  if (test_bool) {
     engine->physics_step();
+    engine->run_contact_add();
+  }
+  if (atlas::event::is_key_pressed(key_q) && test_bool) {
+    test_bool = false;
+    auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
+    m_sphere->set<atlas::transform>({.Position = {0.f, 2.10f, -7.30f},
+                                     .Rotation{1.1504441, 0, 0},
+                                     .Scale = {.50f, .50f, .50f},
+                                     .Color = {1.0f, 1.f, 1.f, 1.f}});
     engine->stop_runtime();
   }
+
+  auto camera_transform = *m_camera->get<atlas::transform>();
+  auto camera_comp = *m_camera->get<atlas::camera>();
+  float deltaTime;
+  deltaTime = atlas::application::delta_time();
+  if (atlas::event::is_key_pressed(key_f12)) {
+    atlas::application::get_window().close();
+  }
+
+  if (atlas::event::is_key_pressed(key_w)) {
+    camera_comp.process_keyboard(atlas::Forward, deltaTime);
+  }
+  if (atlas::event::is_key_pressed(key_s)) {
+    camera_comp.process_keyboard(atlas::Backward, deltaTime);
+  }
+  if (atlas::event::is_key_pressed(key_a)) {
+    camera_comp.process_keyboard(atlas::Left, deltaTime);
+  }
+  if (atlas::event::is_key_pressed(key_d)) {
+    camera_comp.process_keyboard(atlas::Right, deltaTime);
+  }
+  if (atlas::event::is_key_pressed(key_left_shift)) {
+    camera_comp.process_keyboard(atlas::Up, deltaTime);
+  }
+  if (atlas::event::is_key_pressed(key_space)) {
+    camera_comp.process_keyboard(atlas::Down, deltaTime);
+  }
+  if (atlas::event::is_mouse_pressed(mouse_button_1)) {
+    glm::vec2 cursor_pos = atlas::event::cursor_position();
+    //! @note On right click make sure change starts as 0
+    if (!on_click_check) {
+      last_cursor_pos = cursor_pos;
+      on_click_check = true;
+    }
+
+    //! @note offset is now delta_x and delta_y
+    //! @note the difference between mouse old and new positions
+    glm::vec2 offset;
+    offset = cursor_pos - last_cursor_pos;
+
+    glm::vec2 velocity;
+    velocity = offset * (deltaTime * 4500);
+
+    camera_comp.process_mouse_movement(velocity.x * -1, 0.0f);
+
+    camera_comp.process_mouse_movement(0.0f, velocity.y * -1);
+
+    last_cursor_pos = cursor_pos;
+  } else {
+    on_click_check = false;
+  }
+  camera_comp.MovementSpeed = 5;
+  camera_comp.update_proj_view();
+  camera_comp.IsMainCamera = true;
+
+  m_camera->set<atlas::camera>(camera_comp);
+  m_camera->set<atlas::transform>(camera_transform);
 }
 //     auto camera_transform = *m_camera->get<atlas::Transform>();
 
@@ -248,22 +355,22 @@ void level_scene::on_update() {
 //     }
 
 //     if (atlas::event::is_key_pressed(KEY_W)) {
-//         camera_comp.ProcessKeyboard(atlas::FORWARD, deltaTime);
+//         camera_comp.process_keyboard(atlas::FORWARD, deltaTime);
 //     }
 //     if (atlas::event::is_key_pressed(KEY_S)) {
-//         camera_comp.ProcessKeyboard(atlas::BACKWARD, deltaTime);
+//         camera_comp.process_keyboard(atlas::BACKWARD, deltaTime);
 //     }
 //     if (atlas::event::is_key_pressed(KEY_A)) {
-//         camera_comp.ProcessKeyboard(atlas::LEFT, deltaTime);
+//         camera_comp.process_keyboard(atlas::LEFT, deltaTime);
 //     }
 //     if (atlas::event::is_key_pressed(KEY_D)) {
-//         camera_comp.ProcessKeyboard(atlas::RIGHT, deltaTime);
+//         camera_comp.process_keyboard(atlas::RIGHT, deltaTime);
 //     }
 //     if (atlas::event::is_key_pressed(KEY_LEFT_SHIFT)) {
-//         camera_comp.ProcessKeyboard(atlas::UP, deltaTime);
+//         camera_comp.process_keyboard(atlas::UP, deltaTime);
 //     }
 //     if (atlas::event::is_key_pressed(KEY_SPACE)) {
-//         camera_comp.ProcessKeyboard(atlas::DOWN, deltaTime);
+//         camera_comp.process_keyboard(atlas::DOWN, deltaTime);
 //     }
 
 //     if (atlas::event::is_mouse_pressed(MOUSE_BUTTON_RIGHT)) {

@@ -32,6 +32,8 @@ private:
     atlas::ref<atlas::scene_object> m_camera;
 
     bool test_bool = false;
+    bool test_bool_2 = false;
+    bool on_click_check = false;
 
     glm::vec2 last_cursor_pos = glm::zero<glm::vec2>();
 };

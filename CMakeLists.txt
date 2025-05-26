@@ -3,7 +3,6 @@ project(Starter CXX)
 
 set(SCRIPTS assets/scripts)
 
-
 build_application(
     SOURCES
     application.cpp
