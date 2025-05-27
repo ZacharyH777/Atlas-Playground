@@ -97,11 +97,14 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   m_sphere->set(sphere_body);
 
   m_sphere->add<atlas::physics::collider_body>();
+  // auto sphere_shape = *m_sphere->get<atlas::physics::collider_body>();
+  // sphere_shape.shape_type = atlas::physics::collider_shape::Sphere;
+  // m_sphere->set(sphere_shape);
   m_sphere->add<atlas::transform_physics>();
   m_sphere->set<atlas::transform_physics>(
       {.position = {0.f, 2.10f, -7.30f},
        .quaterion_rotation{-0.5440211, 0, 0, -0.8390715},
-       .scale = {.50f, .50f, .50f}});
+       .scale = {.30f, .30f, .30f}});
 
   m_platform = this->create_new_object("platform");
 
