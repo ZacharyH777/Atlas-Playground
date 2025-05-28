@@ -2,6 +2,7 @@
 #include <core/scene/scene.hpp>
 #include <core/scene/scene_object.hpp>
 #include <physics/physics_3d/physics.hpp>
+#include <assets/scripts/camera/editor_camera.hpp>
 #include <glm/glm.hpp>
 
 class level_scene : public atlas::scene_scope {
@@ -18,16 +19,19 @@ public:
 
     // void on_ui_update();
 
-    // void on_physics_update();
+    void on_physics_update();
 
-    // void on_runtime_start();
-    // void on_runtime_stop();
+    void initialize();
+    void start_runtime();
+    void stop_runtime();
 
 private:
     atlas::ref<atlas::physics::physics_engine> engine;
     atlas::ref<atlas::scene_object> m_sphere;
     atlas::ref<atlas::scene_object> m_platform;
     atlas::ref<atlas::scene_object> m_light_object;
+
+    atlas::ref<editor_camera> m_editor_camera;
     bool m_is_simulation_enabled = false;
     atlas::ref<atlas::scene_object> m_camera;
 

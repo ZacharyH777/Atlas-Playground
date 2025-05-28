@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 project(Starter CXX)
 
 set(SCRIPTS assets/scripts)
+set(TEST testing_purposes_only)
 
 build_application(
     SOURCES
@@ -9,10 +10,13 @@ build_application(
     
     editor_world.hpp
     editor_world.cpp
-    assets/data/data.hpp
-    assets/data/my_controls_config.hpp
-    ${SCRIPTS}/keepy.cpp
-    ${SCRIPTS}/keepy.hpp
+    assets/data/camera/editor_controls.hpp
+
+    ${TEST}/requirement_handling/requirements.hpp
+    ${TEST}/requirement_handling/requirements.cpp
+
+    ${SCRIPTS}/camera/editor_camera.cpp
+    ${SCRIPTS}/camera/editor_camera.hpp
 
     level_scene.hpp
     level_scene.cpp
