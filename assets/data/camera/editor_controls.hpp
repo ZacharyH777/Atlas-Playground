@@ -1,3 +1,4 @@
+#pragma once
 #include <stdint.h>
 #include <core/event/key_codes.hpp>
 // #include <glm/glm.hpp>

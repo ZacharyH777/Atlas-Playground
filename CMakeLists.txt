@@ -3,6 +3,7 @@ project(Starter CXX)
 
 set(SCRIPTS assets/scripts)
 set(TEST testing_purposes_only)
+set(DATA assets/data)
 
 build_application(
     SOURCES
@@ -10,13 +11,24 @@ build_application(
     
     editor_world.hpp
     editor_world.cpp
-    assets/data/camera/editor_controls.hpp
+    ${DATA}/camera/editor_controls.hpp
+    ${DATA}/camera/camera_data.hpp
+    ${DATA}/editor/editor_data.hpp
 
     ${TEST}/requirement_handling/requirements.hpp
     ${TEST}/requirement_handling/requirements.cpp
 
     ${SCRIPTS}/camera/editor_camera.cpp
     ${SCRIPTS}/camera/editor_camera.hpp
+
+    ${SCRIPTS}/camera/main_camera.cpp
+    ${SCRIPTS}/camera/main_camera.hpp
+
+    ${SCRIPTS}/camera/camera_manager.cpp
+    ${SCRIPTS}/camera/camera_manager.hpp
+
+    ${SCRIPTS}/editor/editor_setup.cpp
+    ${SCRIPTS}/editor/editor_setup.hpp
 
     level_scene.hpp
     level_scene.cpp

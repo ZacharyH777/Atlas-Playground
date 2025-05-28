@@ -5,20 +5,20 @@
 #include <testing_purposes_only/requirement_handling/requirements.hpp>
 
 
-class editor_camera {
+class main_camera {
 public:
-  editor_camera() = delete;
-  editor_camera(flecs::world &p_registery);
+  main_camera() = delete;
+  main_camera(flecs::world &p_registery);
   void attach_entity(atlas::ref<atlas::scene_object> p_entity,
                      flecs::world &p_registery);
-  ~editor_camera();
+  ~main_camera();
 
   void on_update();
 
 private:
   atlas::ref<atlas::scene_scope> m_current_scene = nullptr;
   atlas::requirements m_requirements;
-  struct editor_camera_action {};
+  struct main_camera_action {};
 
   // Scene should not be stored here but we have no way to query all scenes:
   // So for now I am store level_scene here

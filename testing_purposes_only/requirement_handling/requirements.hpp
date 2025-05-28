@@ -24,7 +24,7 @@ public:
 
   bool does_exist(flecs::entity entity, flecs::world& world, flecs::id_t component_id);
 
-  void apply_to(flecs::entity p_entity) const;
+  void apply(flecs::entity p_entity) const;
 
   void clear();
 

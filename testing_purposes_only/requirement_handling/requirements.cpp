@@ -1,7 +1,7 @@
 #include "requirements.hpp"
 
 namespace atlas {
-void requirements::apply_to(flecs::entity p_entity) const {
+void requirements::apply(flecs::entity p_entity) const {
   for (const auto &builder : builders) {
     builder(p_entity);
   }

@@ -1,11 +1,11 @@
-#include <assets/scripts/camera/editor_camera.hpp>
+#include <assets/scripts/camera/main_camera.hpp>
 #include <core/application.hpp>
 #include <core/event/event.hpp>
 #include <core/system_framework/system_registry.hpp>
 #include <core/update_handlers/sync_update.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-editor_camera::editor_camera(flecs::world &p_registery) {
+main_camera::main_camera(flecs::world &p_registery) {
 
   m_registery = p_registery;
 
@@ -13,42 +13,42 @@ editor_camera::editor_camera(flecs::world &p_registery) {
                 .query_builder<atlas::transform, atlas::camera, editor_controls,
                                editor_data>()
                 .with<atlas::requirements::runs>()
-                .second<editor_camera_action>()
+                .second<main_camera_action>()
                 .build();
 
   // List structs that are required by this action ex: physics_body, transform
   m_requirements
-      .add<flecs::pair<atlas::requirements::runs, editor_camera_action>>(
+      .add<flecs::pair<atlas::requirements::runs, main_camera_action>>(
           p_registery);
 
   m_requirements.add<editor_controls>(p_registery);
   m_requirements.add<atlas::camera>(p_registery);
   m_requirements.add<editor_data>(p_registery);
 
-  atlas::sync(this, &editor_camera::on_update);
+  atlas::sync(this, &main_camera::on_update);
 }
 
-void editor_camera::attach_entity(atlas::ref<atlas::scene_object> p_entity,
+void main_camera::attach_entity(atlas::ref<atlas::scene_object> p_entity,
                                   flecs::world &p_registery) {
   if (!m_requirements.does_exist(*p_entity, p_registery,
-                                 p_registery.id<editor_camera_action>())) {
+                                 p_registery.id<main_camera_action>())) {
 
     m_requirements.apply(*p_entity);
   }
 }
 
-editor_camera::~editor_camera() {
+main_camera::~main_camera() {
   console_log_info("Editor Camera, Is Being Destroyed.\n");
 }
 
-void editor_camera::on_update() {
+void main_camera::on_update() {
   m_registery.defer_begin();
   m_query.each([](flecs::entity p_entity, atlas::transform camera_transform,
                   atlas::camera camera_comp, editor_controls p_controls,
                   editor_data p_data) {
-    
+
     // Camera functionality starts here
-    if (!p_data.runtime_on) {
+    if (p_data.runtime_on) {
       float delta_time;
       delta_time = atlas::application::delta_time();
 

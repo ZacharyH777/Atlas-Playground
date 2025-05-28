@@ -23,43 +23,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp>
 
-// bool on_click_check = false;
-//
-// constexpr int ROTATION_DIRECTION_X = -1;
-// constexpr int ROTATION_DIRECTION_Y = -1;
-//
-// struct MeshData {
-//     glm::vec3 Position{ 0.f };
-//     glm::vec3 Scale{ 0.f };
-//     glm::vec3 Rotation{ 0.f };
-//     std::string mesh_file = "";
-//     glm::vec3 Color{ 1.f };
-// };
-//
-// struct CameraData {
-//     glm::vec3 Position{ 0.f };
-//     glm::vec3 Front{ 0.f };
-//     float Angle = 90.f;
-// };
-//
-// static float sensitivity = 0.f;
-//
-// static MeshData sphere_data;
-// static MeshData some_mesh_data;
-// static CameraData camera_data;
-// static std::string s_SceneFilepath = "";
-// static glm::vec3 g_light_position = glm::vec3(0.0f, 0.0f, 1.0f);
-//
-// static void
-// TraceImpl(const char* Message, ...) {
-//     va_list list;
-//     va_start(list, Message);
-//     char buffer[1024];
-//     vsnprintf(buffer, sizeof(buffer), Message, list);
-//     va_end(list);
-//     console_log_warn("TraceImpl Warning Occured!");
-//     console_log_warn("{}", buffer);
-// }
 //
 // namespace ui {
 //     [[maybe_unused]] static bool BeginPopupContextWindow(const char* str_id,
@@ -70,18 +33,15 @@
 //     }
 //
 // };
-//
-// level_scene::level_scene() {}
-//
 
 level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
 
   console_log_info("scene_scope::scene_scope with Tag = {} called!", p_tag);
-  printf("Getting here\n");
 
-  m_camera = this->create_new_object("camera");
+  m_camera = this->create_new_object("Editor Camera");
 
-  m_camera->add<atlas::physics::jolt::jolt_settings>();
+  m_main_camera = this->create_new_object("Main Camera");
+  m_main_camera->add<atlas::physics::jolt::jolt_settings>();
 
   m_sphere = this->create_new_object("sphere");
 
@@ -129,7 +89,6 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   m_platform->set<atlas::transform>(
       {.Position = {0.f, -10.0f, 0.0f}, .Scale = {10.0f, 1.00f, 10.0f}});
 
-  atlas::sync(this, &level_scene::on_update);
   atlas::sync_physics(this, &level_scene::on_physics_update);
 }
 
@@ -143,23 +102,36 @@ void level_scene::initialize() {
   m_editor_camera = atlas::create_ref<editor_camera>(registery);
   m_editor_camera->attach_entity(m_camera, registery);
 
+  m_main_controls = atlas::create_ref<main_camera>(registery);
+  m_main_controls->attach_entity(m_main_camera, registery);
+
+  m_camera_manager = atlas::create_ref<camera_manager>(registery);
+  m_camera_manager->attach_entity(m_camera, registery);
+  m_camera_manager->attach_entity(m_main_camera, registery);
+
+  m_main_camera->set<camera_data>({.type = camera_type::MAIN_CAMERA});
+
+  m_editor_setup = atlas::create_ref<editor_setup>(registery);
+
   // Add collisions defualt or user defined
   atlas::physics::jolt_collision(((flecs::entity)*m_sphere).id());
 
   // Start the engine on runtime start
   // This wil not need to be in initialize once scene are more organized
-  engine = atlas::physics::initialize_engine(m_camera);
+  engine = atlas::physics::initialize_engine(m_main_camera);
 }
 
 // These functions will not need to be in level scene either once scenes are
 // organized and we have something like load_scene and run_scene elsewhere.
 void level_scene::start_runtime() {
   test_bool = true;
+  m_editor_setup->runtime_on = true;
   engine->start_runtime();
 }
 
 void level_scene::stop_runtime() {
   test_bool = false;
+  m_editor_setup->runtime_on = false;
   // Resets the positions of the objects
   //! @bug (fake and will not work after transform_physics becomes transform)
   auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
@@ -293,65 +265,6 @@ void level_scene::stop_runtime() {
 //    }
 //}
 //
-void level_scene::on_update() {
-
-  // auto camera_transform = *m_camera->get<atlas::transform>();
-  // auto camera_comp = *m_camera->get<atlas::camera>();
-  // float deltaTime;
-  // deltaTime = atlas::application::delta_time();
-  // if (atlas::event::is_key_pressed(key_f12)) {
-  //   atlas::application::get_window().close();
-  // }
-
-  // if (atlas::event::is_key_pressed(key_w)) {
-  //   camera_comp.process_keyboard(atlas::Forward, deltaTime);
-  // }
-  // if (atlas::event::is_key_pressed(key_s)) {
-  //   camera_comp.process_keyboard(atlas::Backward, deltaTime);
-  // }
-  // if (atlas::event::is_key_pressed(key_a)) {
-  //   camera_comp.process_keyboard(atlas::Left, deltaTime);
-  // }
-  // if (atlas::event::is_key_pressed(key_d)) {
-  //   camera_comp.process_keyboard(atlas::Right, deltaTime);
-  // }
-  // if (atlas::event::is_key_pressed(key_left_shift)) {
-  //   camera_comp.process_keyboard(atlas::Up, deltaTime);
-  // }
-  // if (atlas::event::is_key_pressed(key_space)) {
-  //   camera_comp.process_keyboard(atlas::Down, deltaTime);
-  // }
-  // if (atlas::event::is_mouse_pressed(mouse_button_1)) {
-  //   glm::vec2 cursor_pos = atlas::event::cursor_position();
-  //   //! @note On right click make sure change starts as 0
-  //   if (!on_click_check) {
-  //     last_cursor_pos = cursor_pos;
-  //     on_click_check = true;
-  //   }
-
-  //   //! @note offset is now delta_x and delta_y
-  //   //! @note the difference between mouse old and new positions
-  //   glm::vec2 offset;
-  //   offset = cursor_pos - last_cursor_pos;
-
-  //   glm::vec2 velocity;
-  //   velocity = offset * (deltaTime * 4500);
-
-  //   camera_comp.process_mouse_movement(velocity.x * -1, 0.0f);
-
-  //   camera_comp.process_mouse_movement(0.0f, velocity.y * -1);
-
-  //   last_cursor_pos = cursor_pos;
-  // } else {
-  //   on_click_check = false;
-  // }
-  // camera_comp.MovementSpeed = 5;
-  // camera_comp.update_proj_view();
-  // camera_comp.IsMainCamera = true;
-
-  // m_camera->set<atlas::camera>(camera_comp);
-  // m_camera->set<atlas::transform>(camera_transform);
-}
 
 void level_scene::on_physics_update() {
 
