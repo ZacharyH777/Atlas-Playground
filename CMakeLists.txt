@@ -30,6 +30,9 @@ build_application(
     ${SCRIPTS}/editor/editor_setup.cpp
     ${SCRIPTS}/editor/editor_setup.hpp
 
+    ${SCRIPTS}/gui/draw_transforms.cpp
+    ${SCRIPTS}/gui/draw_transforms.hpp
+
     level_scene.hpp
     level_scene.cpp
 

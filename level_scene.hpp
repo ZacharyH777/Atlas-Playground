@@ -6,6 +6,7 @@
 #include <assets/scripts/camera/main_camera.hpp>
 #include <assets/scripts/camera/camera_manager.hpp>
 #include <assets/scripts/editor/editor_setup.hpp>
+#include <assets/scripts/gui/draw_transforms.hpp>
 #include <glm/glm.hpp>
 
 class level_scene : public atlas::scene_scope {
@@ -17,8 +18,6 @@ public:
     virtual ~level_scene() {
         console_log_error("LevelScene::~LevelScene Destructed!!!");
     }
-
-    // void on_ui_update();
 
     void on_physics_update();
 
@@ -45,4 +44,5 @@ private:
     atlas::ref<main_camera> m_main_controls;
     atlas::ref<camera_manager> m_camera_manager;
     atlas::ref<editor_setup> m_editor_setup;
+    atlas::ref<draw_transforms> m_draw_transforms;
 };

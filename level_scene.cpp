@@ -9,7 +9,6 @@
 #include <core/update_handlers/sync_update.hpp>
 
 #include <core/serialize/serializer.hpp>
-#include <core/ui/widgets.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_common.hpp>
 #include <renderer/renderer.hpp>
@@ -112,6 +111,7 @@ void level_scene::initialize() {
   m_main_camera->set<camera_data>({.type = camera_type::MAIN_CAMERA});
 
   m_editor_setup = atlas::create_ref<editor_setup>(registery);
+  m_draw_transforms = atlas::create_ref<draw_transforms>(registery);
 
   // Add collisions defualt or user defined
   atlas::physics::jolt_collision(((flecs::entity)*m_sphere).id());
@@ -142,54 +142,6 @@ void level_scene::stop_runtime() {
   engine->stop_runtime();
 }
 
-//    console_log_info("scene_scope::scene_scope with Tag = {} called!", p_tag);
-//    atlas::world_scope world = atlas::system_registry::get_world();
-//    std::string world_tag = world.get_tag();
-//    console_log_trace("From level_scene::level_scene() ==> World Tag = {}",
-//                      world_tag);
-//
-//    m_sphere = this->create_new_object("sphere");
-//
-//    m_sphere->set<atlas::RenderTarget3D>(
-//      atlas::RenderTarget3D("assets/models/colored_cube.obj"));
-//
-//    m_sphere->set<atlas::Transform>({ .Position = { 0.f, 2.10f, -7.30f },
-//                                      .Scale = { .20f, .20f, .20f },
-//                                      .Color = { 1.0f, 1.f, 1.f, 1.f } });
-//
-//    m_sphere->add<atlas::RigidBody3D>();
-//    m_sphere->add<atlas::Light>();
-//
-//    const atlas::Transform* transform = m_sphere->get<atlas::Transform>();
-//
-//    sphere_data.Position = transform->Position;
-//    sphere_data.Scale = transform->Scale;
-//    sphere_data.Rotation = transform->Rotation;
-//
-//    m_platform = this->create_new_object("mesh1");
-//    m_platform->set<atlas::Transform>({
-//      .Position = { 0.f, 1.40f, -7.4f },
-//      .Scale = { 2.80f, -0.08f, 3.50f },
-//    });
-//
-//    auto some_mesh_transform = m_platform->get<atlas::Transform>();
-//    some_mesh_data.Position = some_mesh_transform->Position;
-//    some_mesh_data.Scale = some_mesh_transform->Scale;
-//    some_mesh_data.Rotation = some_mesh_transform->Rotation;
-//    m_platform->set<atlas::RenderTarget3D>({ "assets/models/cube.obj" });
-//
-//
-//    sync(this, &level_scene::on_update);
-//    sync_physics(this, &level_scene::on_physics_update);
-//    attach(this, &level_scene::on_ui_update);
-//
-//    console_log_warn("World Tag After Initialization ======>>>>> {}",
-//                     atlas::system_registry::get_world().get_tag());
-//}
-//
-// void
-// level_scene::on_ui_update() {
-//
 //    if (ImGui::Begin("Viewport")) {
 //        glm::vec2 viewportPanelSize =
 //          glm::vec2{ atlas::application::get_window().get_width(),
@@ -219,51 +171,6 @@ void level_scene::stop_runtime() {
 //    if (ImGui::Begin("Content Browser")) {
 //        ImGui::End();
 //    }
-//
-//    if (ImGui::Begin("Properties Panel")) {
-//
-//        atlas::ui::draw_panel_component<atlas::RenderTarget3D>("Sphere", [&]()
-//        {
-//            atlas::ui::draw_vec3("pos 1", sphere_data.Position);
-//            atlas::ui::draw_vec3("scale 1", sphere_data.Scale);
-//            atlas::ui::draw_vec3("rotate 1", sphere_data.Rotation);
-//            atlas::ui::draw_vec3("color 1", sphere_data.Color);
-//            atlas::ui::draw_vec3("Light Pos", g_light_position);
-//            atlas::ui::button_open_file_dialog("Load Mesh 1",
-//                                               sphere_data.mesh_file);
-//
-//            if (sphere_data.mesh_file != "") {
-//                std::filesystem::path relative_path =
-//                  std::filesystem::relative(sphere_data.mesh_file, "./");
-//                console_log_trace("Filepath = {}", sphere_data.mesh_file);
-//                m_sphere->set<atlas::RenderTarget3D>(
-//                  { relative_path.string() });
-//                sphere_data.mesh_file = "";
-//            }
-//        });
-//
-//        atlas::ui::draw_panel_component<atlas::RenderTarget3D>(
-//          "Some Mesh", [&]() {
-//              atlas::ui::draw_vec3("Position 2", some_mesh_data.Position);
-//              atlas::ui::draw_vec3("Scale 2", some_mesh_data.Scale);
-//              atlas::ui::draw_vec3("Rotation 2", some_mesh_data.Rotation);
-//              atlas::ui::draw_vec3("Color 2", some_mesh_data.Color);
-//              atlas::ui::draw_float("Mouse Sensitivity", sensitivity);
-//              atlas::ui::button_open_file_dialog("Load Mesh 2",
-//                                                 some_mesh_data.mesh_file);
-//          });
-//
-//
-//
-//        if (ImGui::Button("Save As")) {
-//            std::string output_path = atlas::filesystem::SaveToFile("");
-//            atlas::serializer serializer(this);
-//            serializer.save_as(output_path);
-//        }
-//
-//        ImGui::End();
-//    }
-//}
 //
 
 void level_scene::on_physics_update() {
