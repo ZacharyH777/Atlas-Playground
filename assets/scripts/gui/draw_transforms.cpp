@@ -23,9 +23,11 @@ draw_transforms::~draw_transforms() {
 void draw_transforms::on_ui_update() {
   m_registery.defer_begin();
   if (ImGui::Begin("Properties Panel")) {
-    m_query.each([this](flecs::entity p_entity, atlas::transform &p_transform) {
+    m_query.each([](flecs::entity p_entity, atlas::transform &p_transform) {
       atlas::ui::draw_panel_component<atlas::rendertarget3d>(
-          p_entity.name().c_str(), [&]() {
+          p_entity.name().c_str(), [&, id = p_entity.id()]() {
+
+            ImGui::PushID(id);
             atlas::ui::draw_vec3("pos 1", p_transform.Position);
             atlas::ui::draw_vec3("scale 1", p_transform.Scale);
             atlas::ui::draw_vec3("rotate 1", p_transform.Rotation);
@@ -41,6 +43,7 @@ void draw_transforms::on_ui_update() {
             //          { relative_path.string() });
             //        p_mesh.Filepath = "";
             //    }
+            ImGui::PopID();
           });
     });
     ImGui::End();
