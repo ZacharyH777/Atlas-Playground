@@ -16,6 +16,7 @@
 #include <components/transform.hpp>
 #include <physics/jolt-cpp/jolt_collision.hpp>
 #include <physics/jolt-cpp/jolt_components.hpp>
+#include <testing_purposes_only/requirement_handling/component_builder.hpp>
 
 #include <core/timer.hpp>
 
@@ -34,15 +35,62 @@
 // };
 
 level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
-
   console_log_info("scene_scope::scene_scope with Tag = {} called!", p_tag);
+  flecs::world registery = *this;
+
+  // Turns out flecs has an is_a function. That does this.
+  is = registery.entity("is");
+  object = registery.entity("object");
+
+  registery.component<float>("float");
+  registery.component<int>("int");
+  registery.component<bool>("bool");
+  registery.component<glm::vec3>("glm::vec3");
+  registery.component<glm::vec4>("glm::vec4");
+  registery.component<glm::highp_vec3>("glm::highp_vec3");
+  registery.component<glm::highp_vec4>("glm::highp_vec4");
+
+  // Tetsing reflection builder
+
+  atlas::component_builder builder(registery);
+
+  builder.create<atlas::transform>("transform")
+  .member("Position", &atlas::transform::Position)
+  .member("Rotation", &atlas::transform::Rotation)
+  .member("Scale", &atlas::transform::Scale)
+  .member("Color", &atlas::transform::Color);
+
+  builder.create<editor_controls>("camera controls")
+  .member("down", &editor_controls::down)
+  .member("up", &editor_controls::up)
+  .member("left", &editor_controls::left)
+.member("right", &editor_controls::right)
+.member("forward", &editor_controls::forward)
+.member("backward", &editor_controls::backward)
+.member("player", &editor_controls::player);
+
+  object_test =
+      builder.create<atlas::transform_physics>("physics_transform")
+          .member("position", &atlas::transform_physics::position)
+          .member("quaternion", &atlas::transform_physics::quaterion_rotation)
+          .member("rotation", &atlas::transform_physics::rotation)
+          .member("scale", &atlas::transform_physics::scale)
+          .build(); // Just a showcase .build is only for serialization
+  // We can get into why this is good for serialization later.
 
   m_camera = this->create_new_object("Editor Camera");
+  flecs::entity temp;
+  temp = *m_camera;
+  temp.add(is, object);
 
   m_main_camera = this->create_new_object("Main Camera");
+  temp = *m_main_camera;
+  temp.add(is, object);
   m_main_camera->add<atlas::physics::jolt::jolt_settings>();
 
-  m_sphere = this->create_new_object("sphere");
+  m_sphere = this->create_new_object("Cube");
+  temp = *m_sphere;
+  temp.add(is, object);
 
   m_sphere->set<atlas::rendertarget3d>(
       atlas::rendertarget3d("assets/models/colored_cube.obj"));
@@ -59,11 +107,39 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   // m_sphere->set(sphere_shape);
   m_sphere->add<atlas::transform_physics>();
   m_sphere->set<atlas::transform_physics>(
-      {.position = {0.f, 2.10f, -7.30f},
-       .quaterion_rotation{-0.5440211, 0, 0, -0.8390715},
-       .scale = {.30f, .30f, .30f}});
+      {.position = {0.f, 2.10f, -7.30f}, .scale = {.30f, .30f, .30f}});
 
-  m_platform = this->create_new_object("platform");
+  m_platform = this->create_new_object("Platform");
+  temp = *m_platform;
+  temp.add(is, object);
+
+  m_test_object = this->create_new_object("Test Child Object");
+  temp = *m_test_object;
+  temp.add(is, object);
+
+  flecs::entity temp2 = *m_platform;
+  temp.child_of(temp2.id());
+
+  m_test_object2 = this->create_new_object("Test Child Object 2");
+  temp = *m_test_object2;
+  temp.add(is, object);
+
+  temp.child_of(temp2.id());
+
+  m_test_object3 = this->create_new_object("Test GrandChild Object");
+  temp = *m_test_object3;
+  temp.add(is, object);
+
+  temp2 = *m_test_object;
+  temp.child_of(temp2.id());
+
+  m_player_head = this->create_new_object("Player Head");
+  temp = *m_player_head;
+  temp.add(is, object);
+
+  m_player_torso = this->create_new_object("Player Torso");
+  temp = *m_player_torso;
+  temp.add(is, object);
 
   m_platform->add<atlas::physics::collider_body>();
   m_platform->add<atlas::transform_physics>();
@@ -111,7 +187,11 @@ void level_scene::initialize() {
   m_main_camera->set<camera_data>({.type = camera_type::MAIN_CAMERA});
 
   m_editor_setup = atlas::create_ref<editor_setup>(registery);
-  m_draw_transforms = atlas::create_ref<draw_transforms>(registery);
+  //m_draw_transforms = atlas::create_ref<draw_transforms>(registery);
+
+  m_ui_hierarchy = atlas::create_ref<ui_hierarchy>(registery, test);
+  m_ui_properties =
+      atlas::create_ref<atlas::ui_properties_panel>(registery, test);
 
   // Add collisions defualt or user defined
   atlas::physics::jolt_collision(((flecs::entity)*m_sphere).id());

@@ -17,6 +17,8 @@ build_application(
 
     ${TEST}/requirement_handling/requirements.hpp
     ${TEST}/requirement_handling/requirements.cpp
+    ${TEST}/requirement_handling/component_builder.hpp
+    ${TEST}/requirement_handling/offset_of.hpp
 
     ${SCRIPTS}/camera/editor_camera.cpp
     ${SCRIPTS}/camera/editor_camera.hpp
@@ -32,6 +34,14 @@ build_application(
 
     ${SCRIPTS}/gui/draw_transforms.cpp
     ${SCRIPTS}/gui/draw_transforms.hpp
+
+    ${SCRIPTS}/gui/ui_hierarchy.cpp
+    ${SCRIPTS}/gui/ui_hierarchy.hpp
+
+    ${SCRIPTS}/gui/ui_properties_panel.hpp
+    ${SCRIPTS}/gui/ui_properties_panel.cpp
+
+
 
     level_scene.hpp
     level_scene.cpp
