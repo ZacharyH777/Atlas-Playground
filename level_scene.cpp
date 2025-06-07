@@ -72,7 +72,6 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   object_test =
       builder.create<atlas::transform_physics>("physics_transform")
           .member("position", &atlas::transform_physics::position)
-          .member("quaternion", &atlas::transform_physics::quaterion_rotation)
           .member("rotation", &atlas::transform_physics::rotation)
           .member("scale", &atlas::transform_physics::scale)
           .build(); // Just a showcase .build is only for serialization
@@ -86,7 +85,8 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   m_main_camera = this->create_new_object("Main Camera");
   temp = *m_main_camera;
   temp.add(is, object);
-  m_main_camera->add<atlas::physics::jolt::jolt_settings>();
+  m_main_camera->add<atlas::physics::jolt_settings>();
+  m_main_camera->add<atlas::physics::jolt_config>();
 
   m_sphere = this->create_new_object("Cube");
   temp = *m_sphere;
@@ -198,7 +198,7 @@ void level_scene::initialize() {
 
   // Start the engine on runtime start
   // This wil not need to be in initialize once scene are more organized
-  engine = atlas::physics::initialize_engine(m_main_camera);
+  engine = atlas::physics::initialize_engine(m_main_camera, registery);
 }
 
 // These functions will not need to be in level scene either once scenes are
@@ -206,6 +206,11 @@ void level_scene::initialize() {
 void level_scene::start_runtime() {
   test_bool = true;
   m_editor_setup->runtime_on = true;
+  auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
+  m_sphere->set<atlas::transform>({.Position = physics_sphere_transform->position,
+                                   .Rotation = physics_sphere_transform->rotation,
+                                   .Scale = physics_sphere_transform->scale,
+                                   .Color = {1.0f, 1.f, 1.f, 1.f}});
   engine->start_runtime();
 }
 
@@ -215,9 +220,9 @@ void level_scene::stop_runtime() {
   // Resets the positions of the objects
   //! @bug (fake and will not work after transform_physics becomes transform)
   auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
-  m_sphere->set<atlas::transform>({.Position = {0.f, 2.10f, -7.30f},
-                                   .Rotation{1.1504441, 0, 0},
-                                   .Scale = {.50f, .50f, .50f},
+  m_sphere->set<atlas::transform>({.Position = physics_sphere_transform->position,
+                                   .Rotation = physics_sphere_transform->rotation,
+                                   .Scale = physics_sphere_transform->scale,
                                    .Color = {1.0f, 1.f, 1.f, 1.f}});
   engine->stop_runtime();
 }
