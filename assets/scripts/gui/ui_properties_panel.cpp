@@ -30,9 +30,10 @@ void ui_properties_panel::on_ui_update() {
           return;
 
         const std::string label = component_type.name().c_str();
-
+        ImGui::PushID(id);
         atlas::ui::draw_panel_component<void>(
             label, [&]() { draw_component(component_type, comp_ptr); });
+        ImGui::PopID();
       });
     }
   }
@@ -72,13 +73,10 @@ void ui_properties_panel::draw_member(const flecs::entity &member_entity,
     return;
   }
 
-  console_log_info("Getting Here!");
   void *member_ptr = static_cast<char *>(base_ptr) + member->offset;
   flecs::id_t type_id = member->type;
-  console_log_info("Getting Here!2");
+  ;
   const std::string label = member_entity.name().c_str();
-  console_log_info("Getting Here!3");
-  console_log_info("World info: {}", m_world.get_info()->name_prefix);
 
   //  This is a bit rushed and should be a drawer
   //  But is fine for now
@@ -90,8 +88,6 @@ void ui_properties_panel::draw_member(const flecs::entity &member_entity,
   flecs::id_t highp_vec3_id = m_world.component<glm::highp_vec3>().id();
   flecs::id_t highp_vec4_id = m_world.component<glm::highp_vec4>().id();
   flecs::id_t uint32_t_id = m_world.component<uint32_t>().id();
-
-  console_log_info("Getting Here!4");
 
   if (type_id == float_id) {
     atlas::ui::draw_float(label, *reinterpret_cast<float *>(member_ptr));

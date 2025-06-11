@@ -79,4 +79,6 @@ private:
     flecs::entity object;
     flecs::entity is;
     flecs::entity object_test;
+
+    flecs::query<atlas::transform> transform_query;
 };

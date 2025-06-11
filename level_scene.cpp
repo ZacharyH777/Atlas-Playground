@@ -16,6 +16,7 @@
 #include <components/transform.hpp>
 #include <physics/jolt-cpp/jolt_collision.hpp>
 #include <physics/jolt-cpp/jolt_components.hpp>
+#include <physics/physics_3d/jolt/jolt_helper.hpp>
 #include <testing_purposes_only/requirement_handling/component_builder.hpp>
 
 #include <core/timer.hpp>
@@ -55,28 +56,40 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   atlas::component_builder builder(registery);
 
   builder.create<atlas::transform>("transform")
-  .member("Position", &atlas::transform::Position)
-  .member("Rotation", &atlas::transform::Rotation)
-  .member("Scale", &atlas::transform::Scale)
-  .member("Color", &atlas::transform::Color);
+      .member("Position", &atlas::transform::Position)
+      .member("Rotation", &atlas::transform::Rotation)
+      .member("Scale", &atlas::transform::Scale)
+      .member("Color", &atlas::transform::Color);
 
   builder.create<editor_controls>("camera controls")
-  .member("down", &editor_controls::down)
-  .member("up", &editor_controls::up)
-  .member("left", &editor_controls::left)
-.member("right", &editor_controls::right)
-.member("forward", &editor_controls::forward)
-.member("backward", &editor_controls::backward)
-.member("player", &editor_controls::player);
+      .member("down", &editor_controls::down)
+      .member("up", &editor_controls::up)
+      .member("left", &editor_controls::left)
+      .member("right", &editor_controls::right)
+      .member("forward", &editor_controls::forward)
+      .member("backward", &editor_controls::backward)
+      .member("player", &editor_controls::player);
+
+  builder.create<atlas::physics::physics_body>("RigidBody")
+      .member("Velocity", &atlas::physics::physics_body::linear_velocity)
+      .member("Angular Velocity",
+              &atlas::physics::physics_body::angular_velocity)
+      .member("Force Vector", &atlas::physics::physics_body::cumulative_force)
+      .member("Torque Vector", &atlas::physics::physics_body::cumulative_torque)
+      .member("Friction", &atlas::physics::physics_body::friction)
+      .member("Restitution", &atlas::physics::physics_body::restitution)
+      .member("Use Gravity", &atlas::physics::physics_body::use_gravity)
+      .member("Gravity Mult", &atlas::physics::physics_body::gravity_factor);
 
   object_test =
       builder.create<atlas::transform_physics>("physics_transform")
-          .member("position", &atlas::transform_physics::position)
-          .member("rotation", &atlas::transform_physics::rotation)
-          .member("scale", &atlas::transform_physics::scale)
+          .member("Position", &atlas::transform_physics::position)
+          .member("Rotation", &atlas::transform_physics::rotation)
+          .member("Scale", &atlas::transform_physics::scale)
           .build(); // Just a showcase .build is only for serialization
   // We can get into why this is good for serialization later.
 
+  this->query_builder<atlas::transform>().build();
   m_camera = this->create_new_object("Editor Camera");
   flecs::entity temp;
   temp = *m_camera;
@@ -106,8 +119,9 @@ level_scene::level_scene(const std::string &p_tag) : atlas::scene_scope(p_tag) {
   // sphere_shape.shape_type = atlas::physics::collider_shape::Sphere;
   // m_sphere->set(sphere_shape);
   m_sphere->add<atlas::transform_physics>();
-  m_sphere->set<atlas::transform_physics>(
-      {.position = {0.f, 2.10f, -7.30f}, .scale = {.30f, .30f, .30f}});
+  m_sphere->set<atlas::transform_physics>({.position = {0.f, 2.10f, -7.30f},
+                                           .rotation = {-.30f, 0.0f, 0.0f},
+                                           .scale = {.30f, .30f, .30f}});
 
   m_platform = this->create_new_object("Platform");
   temp = *m_platform;
@@ -187,7 +201,7 @@ void level_scene::initialize() {
   m_main_camera->set<camera_data>({.type = camera_type::MAIN_CAMERA});
 
   m_editor_setup = atlas::create_ref<editor_setup>(registery);
-  //m_draw_transforms = atlas::create_ref<draw_transforms>(registery);
+  // m_draw_transforms = atlas::create_ref<draw_transforms>(registery);
 
   m_ui_hierarchy = atlas::create_ref<ui_hierarchy>(registery, test);
   m_ui_properties =
@@ -207,10 +221,18 @@ void level_scene::start_runtime() {
   test_bool = true;
   m_editor_setup->runtime_on = true;
   auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
-  m_sphere->set<atlas::transform>({.Position = physics_sphere_transform->position,
-                                   .Rotation = physics_sphere_transform->rotation,
-                                   .Scale = physics_sphere_transform->scale,
-                                   .Color = {1.0f, 1.f, 1.f, 1.f}});
+
+  auto quaternion = glm::quat({physics_sphere_transform->rotation.x,
+                               physics_sphere_transform->rotation.y,
+                               physics_sphere_transform->rotation.z});
+
+  m_sphere->set<atlas::transform>(
+      {.Position = physics_sphere_transform->position,
+       .QuaternionRotation = glm::highp_vec4(quaternion.x, quaternion.y,
+                                             quaternion.z, quaternion.w),
+       .Rotation = physics_sphere_transform->rotation,
+       .Scale = physics_sphere_transform->scale,
+       .Color = {1.0f, 1.f, 1.f, 1.f}});
   engine->start_runtime();
 }
 
@@ -220,10 +242,18 @@ void level_scene::stop_runtime() {
   // Resets the positions of the objects
   //! @bug (fake and will not work after transform_physics becomes transform)
   auto physics_sphere_transform = m_sphere->get<atlas::transform_physics>();
-  m_sphere->set<atlas::transform>({.Position = physics_sphere_transform->position,
-                                   .Rotation = physics_sphere_transform->rotation,
-                                   .Scale = physics_sphere_transform->scale,
-                                   .Color = {1.0f, 1.f, 1.f, 1.f}});
+
+  auto quaternion = glm::quat({physics_sphere_transform->rotation.x,
+                               physics_sphere_transform->rotation.y,
+                               physics_sphere_transform->rotation.z});
+
+  m_sphere->set<atlas::transform>(
+      {.Position = physics_sphere_transform->position,
+       .QuaternionRotation = glm::highp_vec4(quaternion.x, quaternion.y,
+                                             quaternion.z, quaternion.w),
+       .Rotation = physics_sphere_transform->rotation,
+       .Scale = physics_sphere_transform->scale,
+       .Color = {1.0f, 1.f, 1.f, 1.f}});
   engine->stop_runtime();
 }
 
