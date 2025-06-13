@@ -1,4 +1,3 @@
-
 #include "level_scene.hpp"
 #include <drivers/vulkan/helper_functions.hpp>
 #include <drivers/vulkan/vulkan_context.hpp>
@@ -317,6 +316,55 @@ void level_scene::on_physics_update() {
    *  physics_run,
    *  end_runtime.
    */
+
+  if (atlas::event::is_key_pressed(key_j)) {
+    // console_log_info("key_j");
+    glm::vec3 move = {0.1, 0, 0};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
+  if (atlas::event::is_key_pressed(key_k)) {
+    // console_log_info("key_k");
+    glm::vec3 move = {-0.1, 0, 0};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
+  if (atlas::event::is_key_pressed(key_h)) {
+    // console_log_info("key_h");
+    glm::vec3 move = {0, 0, 0.1};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
+  if (atlas::event::is_key_pressed(key_l)) {
+    // console_log_info("key_l");
+    glm::vec3 move = {0, 0, -0.1};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
+  if (atlas::event::is_key_pressed(key_y)) {
+    // console_log_info("key_l");
+    glm::vec3 move = {0, -0.1, 0};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
+  if (atlas::event::is_key_pressed(key_u)) {
+    // console_log_info("key_l");
+    glm::vec3 move = {0, 0.1, 0};
+    // atlas::physics::add_force(move,
+    //                           *(m_sphere->get<atlas::physics::physics_body>()));
+    atlas::physics::add_velocity(
+        move, *(m_sphere->get<atlas::physics::physics_body>()));
+  }
 
   // Physics time step
   if (test_bool) {
